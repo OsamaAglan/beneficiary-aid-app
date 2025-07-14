@@ -236,6 +236,7 @@ const Sidebar = ({ open, setOpen }) => {
                       fontFamily: 'Cairo, sans-serif',
                       color: location.pathname === logoutItem.path ? '#d0f0f0' : '#fff',
                     }}
+                    
                   >
                     {logoutItem.text}
                   </Typography>
