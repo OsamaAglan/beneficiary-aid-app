@@ -1,0 +1,18 @@
+body {
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+
+
+
+
+.MuiCard-root:hover .card-details {
+  opacity: 1 !important;
+  max-height: 300px !important;
+}
+
+.MuiCard-root:hover .card-title {
+  margin-top: 0px !important;
+}
