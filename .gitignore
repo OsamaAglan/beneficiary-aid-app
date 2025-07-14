@@ -1,0 +1,30 @@
+# ⛔️ عدم رفع مجلد تثبيت الحزم
+node_modules/
+
+# ⛔️ ملفات الـ build
+dist/
+build/
+
+# ⛔️ ملفات البيئة السرية
+.env
+
+# ⛔️ ملفات النظام غير المهمة
+.DS_Store
+Thumbs.db
+
+# ⛔️ لوجات
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ⛔️ ملفات VS Code
+.vscode/
+
+# ⛔️ ملفات التغطية الاختبارية
+coverage/
+
+# ⛔️ ملفات النظام المؤقتة
+*.swp
+*.swo
+*.bak
