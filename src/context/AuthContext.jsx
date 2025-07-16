@@ -1,13 +1,24 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('accessToken') || '');
-  const [username, setUsername] = useState(localStorage.getItem('username') || '');
-  const [organization, setOrganization] = useState(localStorage.getItem('organization') || '');
+  const [token, setToken] = useState('');
+  const [username, setUsername] = useState('');
+  const [organization, setOrganization] = useState('');
+  const [companyId, setCompanyId] = useState('');
 
-  const login = async (usernameInput, passwordInput) => {
+  // 🔄 تحميل البيانات عند التهيئة من localStorage أو sessionStorage
+  useEffect(() => {
+    const storage = localStorage.getItem('accessToken') ? localStorage : sessionStorage;
+
+    setToken(storage.getItem('accessToken') || '');
+    setUsername(storage.getItem('username') || '');
+    setOrganization(storage.getItem('organization') || '');
+    setCompanyId(storage.getItem('companyId') || '');
+  }, []);
+
+  const login = async (usernameInput, passwordInput, companyIdInput, rememberMe) => {
     try {
       const response = await fetch('http://192.168.1.59:5051/api/Users/Login', {
         method: 'POST',
@@ -16,6 +27,7 @@ export const AuthProvider = ({ children }) => {
           username: usernameInput,
           loginName: usernameInput,
           loginPassword: passwordInput,
+          companyId: companyIdInput,
           userAgent: navigator.userAgent
         }),
       });
@@ -27,15 +39,18 @@ export const AuthProvider = ({ children }) => {
 
       if (!userData?.accessToken) throw new Error('الرمز غير موجود في الاستجابة');
 
-      // حفظ البيانات في localStorage
-      localStorage.setItem('accessToken', userData.accessToken);
-      localStorage.setItem('username', userData.userName || usernameInput);
-      localStorage.setItem('organization', userData.organization || 'جمعية البر');
+      const storage = rememberMe ? localStorage : sessionStorage;
 
-      // تحديث state
+      storage.setItem('accessToken', userData.accessToken);
+      storage.setItem('username', userData.userName || usernameInput);
+      storage.setItem('organization', userData.organization || 'جمعية البر');
+      storage.setItem('companyId', companyIdInput);
+
+      // تحديث الحالة في الذاكرة
       setToken(userData.accessToken);
       setUsername(userData.userName || usernameInput);
       setOrganization(userData.organization || 'جمعية البر');
+      setCompanyId(companyIdInput);
 
       return true;
     } catch (error) {
@@ -45,16 +60,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('username');
-    localStorage.removeItem('organization');
+    localStorage.clear();
+    sessionStorage.clear();
+
     setToken('');
     setUsername('');
     setOrganization('');
+    setCompanyId('');
   };
 
   return (
-    <AuthContext.Provider value={{ token, username, organization, login, logout }}>
+    <AuthContext.Provider value={{ token, username, organization, companyId, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

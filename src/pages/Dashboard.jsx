@@ -13,6 +13,8 @@ import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import TableCell from '@mui/material/TableCell';
 
+// ... باقي الاستيراد كما هو
+
 const Dashboard = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -34,9 +36,9 @@ const Dashboard = () => {
           axiosInstance.get('/Dashboard/AssistancesType')
         ]);
 
-        setStats(statsRes.data.data || {});
-        setBeneficiaries(benRes.data.data || []);
-        setTypes(typesRes.data.data || []);
+        setStats(statsRes.data?.data || {});
+        setBeneficiaries(benRes.data?.data || []);
+        setTypes(typesRes.data?.data || []);
       } catch (err) {
         console.error('فشل تحميل بيانات لوحة التحكم');
       } finally {
@@ -63,22 +65,21 @@ const Dashboard = () => {
         ) : (
           <>
             <Grid item xs={12} sm={6} md={3}>
-              <DashboardCard label="إجمالي المستفيدين" value={stats.totalBeneficiaries} icon={<People />} bg="#D0F0C0" />
+              <DashboardCard label="إجمالي المستفيدين" value={stats?.totalBeneficiaries ?? 0} icon={<People />} bg="#D0F0C0" />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <DashboardCard label="مساعدات هذا الشهر" value={stats.monthlyAssistances} icon={<MonetizationOn />} bg="#FCE4EC" />
+              <DashboardCard label="مساعدات هذا الشهر" value={stats?.monthlyAssistances ?? 0} icon={<MonetizationOn />} bg="#FCE4EC" />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <DashboardCard label="طلبات معلقة" value={stats.pendingRequests} icon={<PendingActions />} bg="#FFF3CD" />
+              <DashboardCard label="طلبات معلقة" value={stats?.pendingRequests ?? 0} icon={<PendingActions />} bg="#FFF3CD" />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <DashboardCard label="إجمالي المنصرف" value={`${stats.totalAmount} `} icon={<AccountBalanceWallet />} bg="#E0F7FA" />
+              <DashboardCard label="إجمالي المنصرف" value={`${stats?.totalAmount ?? 0}`} icon={<AccountBalanceWallet />} bg="#E0F7FA" />
             </Grid>
           </>
         )}
       </Grid>
 
-      {/* الرسوم البيانية */}
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} md={6}>
           <Box sx={{ bgcolor: '#fff', p: 2, borderRadius: 3 }}>
@@ -108,13 +109,14 @@ const Dashboard = () => {
         <Grid item xs={12} md={6}>
           <Box sx={{ bgcolor: '#fff', p: 2, borderRadius: 3 }}>
             <Typography variant="h6" mb={2} color="primary">تنبيهات هامة</Typography>
-            <Alert severity="warning" sx={{ mb: 1 }}>يوجد {stats?.pendingRequests || 0} طلبات مساعدة غير مكتملة</Alert>
+            <Alert severity="warning" sx={{ mb: 1 }}>
+              يوجد {stats?.pendingRequests ?? 0} طلبات مساعدة غير مكتملة
+            </Alert>
             <Alert severity="info">بعض المستفيدين لم يستكملوا بياناتهم</Alert>
           </Box>
         </Grid>
       </Grid>
 
-      {/* الروابط السريعة */}
       <Grid container spacing={2} mb={3}>
         <Grid item xs={12} sm={4}>
           <Button fullWidth variant="contained" color="primary" onClick={() => navigate('/assistances/new')}>
@@ -133,7 +135,6 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* جدول المستفيدين */}
       <Grid container>
         <Grid item xs={12}>
           <DashboardTable

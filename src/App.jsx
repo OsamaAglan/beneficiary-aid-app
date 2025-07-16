@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import Login from './pages/Login';
+import Logout from './pages/Logout';
 import Layout from './Layout';
 import Assistances from './pages/Assistances';
 import AssistanceTypes from './pages/AssistanceTypes';
@@ -51,6 +52,8 @@ function App() {
           <Route path="/DocumentTypes" element={<DocumentTypes />} />
           <Route path="/RequiredDocuments" element={<RequiredDocuments />} />
           <Route path="/DocumentsPage" element={<DocumentsPage />} />
+          <Route path="/logout" element={<Logout />} />
+
         </Route>
       </Routes>
     </BrowserRouter>

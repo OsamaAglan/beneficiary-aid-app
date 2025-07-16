@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  TextField, Button, Container, Typography, Box, CircularProgress,Grid ,
+  TextField, Button, Container, Typography, Box, CircularProgress, Grid,
   FormControlLabel, Switch, FormControl, FormLabel, RadioGroup, Radio,
   MenuItem, Select, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
@@ -89,6 +89,13 @@ const AddBeneficiaryPage = ({ mode }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    if (!formData.beneficiaryGroupId) {
+      alert("يرجى اختيار المجموعة");
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = {
         ...formData,
@@ -98,11 +105,13 @@ const AddBeneficiaryPage = ({ mode }) => {
         gender: parseInt(formData.gender || 0),
         dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : null,
       };
+
       if (mode === 'new-case') {
         await axiosInstance.post('/Beneficiaries/Insert', payload);
       } else {
         await axiosInstance.put('/Beneficiaries/Update', payload);
       }
+
       navigate('/beneficiaries');
     } catch (error) {
       console.error('تفاصيل الخطأ:', error);
@@ -161,92 +170,48 @@ const AddBeneficiaryPage = ({ mode }) => {
       </Typography>
 
       <form onSubmit={handleSubmit}>
-        
-
-<Grid container spacing={2}>
-  <Grid item xs={12}>
-    <TextField fullWidth label="الاسم الكامل" name="fullName" value={formData.fullName} onChange={handleChange} />
-  </Grid>
-  <Grid item xs={12}>
-    <TextField fullWidth label="رقم الهاتف" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} />
- 
- 
-  </Grid>
-
-  <Grid item xs={12}>
-
- 
-
-  <TextField fullWidth label="عدد أفراد الأسرة" name="familySize" type="number" value={formData.familySize} onChange={handleChange} />
-        
-         </Grid>
-  <Grid item xs={12}>
-   <TextField fullWidth label="الرقم القومي" name="nationalId" value={formData.nationalId} onChange={handleChange} />
-       
- 
-  </Grid>
-
- <Grid item xs={12}>
-  <TextField fullWidth label="المدينة"      name="city" value={formData.city} onChange={handleChange}  />
-
-        
-  </Grid>
-  <Grid item xs={12}>
-  <TextField fullWidth label="تاريخ الميلاد" name="dateOfBirth" type="date" InputLabelProps={{ shrink: true }} value={formData.dateOfBirth} onChange={handleChange} />
-
- 
-  </Grid>
-
-
-
-
-
-
-  
-
- 
-   <FormControl  >
-                  <RadioGroup
-            row
-            name="gender"
-            value={formData.gender.toString()}
-            onChange={handleChange}
-          >
-            <FormControlLabel value="1" control={<Radio />} label="ذكر" />
-            <FormControlLabel value="2" control={<Radio />} label="أنثى" />
-          </RadioGroup>
-        </FormControl>
-        
-        <FormControlLabel
-          control={
-            <Switch
-              checked={formData.isActive}
-              onChange={handleChange}
-              name="isActive"
-              color="primary"
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField fullWidth label="الاسم الكامل" name="fullName" value={formData.fullName} onChange={handleChange} />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField fullWidth label="رقم الهاتف" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField fullWidth label="عدد أفراد الأسرة" name="familySize" type="number" value={formData.familySize} onChange={handleChange} />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField fullWidth label="الرقم القومي" name="nationalId" value={formData.nationalId} onChange={handleChange} />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField fullWidth label="المدينة" name="city" value={formData.city} onChange={handleChange} />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField fullWidth label="تاريخ الميلاد" name="dateOfBirth" type="date" InputLabelProps={{ shrink: true }} value={formData.dateOfBirth} onChange={handleChange} />
+          </Grid>
+          <Grid item xs={12}>
+            <FormControl>
+              <RadioGroup row name="gender" value={formData.gender.toString()} onChange={handleChange}>
+                <FormControlLabel value="1" control={<Radio />} label="ذكر" />
+                <FormControlLabel value="2" control={<Radio />} label="أنثى" />
+              </RadioGroup>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={<Switch checked={formData.isActive} onChange={handleChange} name="isActive" color="primary" />}
+              label="نشط"
             />
-          }
-          label="نشط"
-        />
-
-
-<TextField  fullWidth label="العنوان" name="address" value={formData.address} onChange={handleChange} />
-
-<TextField fullWidth label="ملاحظات" name="notes" value={formData.notes} onChange={handleChange}  />
-        
-    
-
-</Grid>
-
-
-
-
-
-
-
+          </Grid>
+          <Grid item xs={12}>
+            <TextField fullWidth label="العنوان" name="address" value={formData.address} onChange={handleChange} />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField fullWidth label="ملاحظات" name="notes" value={formData.notes} onChange={handleChange} />
+          </Grid>
+        </Grid>
 
         <FormControl fullWidth margin="normal">
-       
           <InputLabel id="beneficiaryType-label">نوع المستفيد</InputLabel>
           <Select
             labelId="beneficiaryType-label"
@@ -261,24 +226,8 @@ const AddBeneficiaryPage = ({ mode }) => {
               </MenuItem>
             ))}
           </Select>
-
         </FormControl>
 
-    
-
-
-
-
-
-
-<Grid container spacing={2}>
-
-
-
-</Grid>
-
-
-         
         <FormControl fullWidth margin="normal">
           <InputLabel id="maritalStatus-label">الحالة الاجتماعية</InputLabel>
           <Select
@@ -294,56 +243,47 @@ const AddBeneficiaryPage = ({ mode }) => {
           </Select>
         </FormControl>
 
-           {/* ✅ اختيار المجموعة + زر الإضافة */}
+        {/* اختيار المجموعة + زر الإضافة */}
         <FormControl fullWidth margin="normal">
-        <Box display="flex" alignItems="flex-end" gap={2}>
-  <FormControl fullWidth>
-    <InputLabel id="beneficiaryGroup-label">المجموعة</InputLabel>
-    <Select
-      labelId="beneficiaryGroup-label"
-      name="beneficiaryGroupId"
-      value={formData.beneficiaryGroupId}
-      onChange={handleChange}
-      label="المجموعة"
-    >
-      {groups.map((group) => (
-        <MenuItem key={group.beneficiaryGroupId} value={group.beneficiaryGroupId.toString()}>
-          {group.beneficiaryGroupName}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
+          <Box display="flex" alignItems="flex-end" gap={2}>
+            <FormControl fullWidth>
+              <InputLabel id="beneficiaryGroup-label">المجموعة</InputLabel>
+              <Select
+                labelId="beneficiaryGroup-label"
+                name="beneficiaryGroupId"
+                value={formData.beneficiaryGroupId}
+                onChange={handleChange}
+                label="المجموعة"
+              >
+                {groups.map((group) => (
+                  <MenuItem key={group.beneficiaryGroupId} value={group.beneficiaryGroupId.toString()}>
+                    {group.beneficiaryGroupName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-  <Button
-    variant="outlined"
-    onClick={() => setNewGroupDialogOpen(true)}
-    sx={{ whiteSpace: 'nowrap', height: '56px' }} // لضبط ارتفاع الزر مع القائمة
-  >
-    جديد
-  </Button>
-</Box>
-
-
-
-
-
-
-
+            <Button
+              variant="outlined"
+              onClick={() => setNewGroupDialogOpen(true)}
+              sx={{ whiteSpace: 'nowrap', height: '56px' }}
+            >
+              جديد
+            </Button>
+          </Box>
         </FormControl>
 
-     
-
-
-
-        
+        <Box mt={3} display="flex" gap={2} justifyContent="center">
+          <Button variant="contained" color="primary" type="submit" disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : 'حفظ'}
+          </Button>
+          <Button variant="outlined" onClick={() => navigate('/beneficiaries')}>
+            إلغاء
+          </Button>
+        </Box>
       </form>
 
-
-    
-  
-
-
-      {/* ✅ Dialog لإضافة مجموعة جديدة */}
+      {/* نافذة إضافة مجموعة جديدة */}
       <Dialog open={newGroupDialogOpen} onClose={() => setNewGroupDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>إضافة مجموعة جديدة</DialogTitle>
         <DialogContent>
@@ -365,43 +305,29 @@ const AddBeneficiaryPage = ({ mode }) => {
           />
         </DialogContent>
 
+        <DialogActions>
+          <Box display="flex" justifyContent="space-between" width="100%">
+            <Button
+              onClick={() => setNewGroupDialogOpen(false)}
+              color="inherit"
+              startIcon={<CloseIcon />}
+              sx={{ gap: '10px' }}
+            >
+              إلغاء
+            </Button>
 
-
-
-        
+            <Button
+              onClick={handleAddNewGroup}
+              variant="contained"
+              color="primary"
+              startIcon={<SaveIcon />}
+              sx={{ gap: '10px' }}
+            >
+              حفظ
+            </Button>
+          </Box>
+        </DialogActions>
       </Dialog>
-
-<DialogActions>
-  <Box display="flex" justifyContent="center" width="100%">
-    
-  <Button
-  onClick={handleAddNewGroup}
-  variant="contained"
-  color="primary"
-  startIcon={<SaveIcon />}
-  sx={{ gap: '10px' }} // ← زيادة المسافة بين الأيقونة والنص
->
-  حفظ
-</Button>
-
-
-
-    <Button
-      onClick={() => setNewGroupDialogOpen(false)}
-      color="inherit"
-      startIcon={<CloseIcon />}
-        sx={{ gap: '10px' }} // ← زيادة المسافة بين الأيقونة والنص
-    >
-      إلغاء
-    </Button>
-
-  
-  </Box>
-</DialogActions>
-
-
-
-
     </Container>
   );
 };
