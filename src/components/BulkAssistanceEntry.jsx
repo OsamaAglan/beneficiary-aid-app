@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
 import {
   Container, Typography, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, TextField, MenuItem, Button, Box,
-  colors
+  TableHead, TableRow, Paper, TextField, MenuItem, Button, Box
 } from '@mui/material';
 import axiosInstance from '../axiosInstance';
 import { useNavigate } from 'react-router-dom';
@@ -29,13 +28,8 @@ const BulkAssistances = () => {
     if (saved) {
       setBoxPosition(JSON.parse(saved));
     }
-  }, []);
 
-  useEffect(() => {
-    axiosInstance.get('/Beneficiaries/GetAll').then(res => {
-      setBeneficiaries(res.data.data || []);
-    });
-
+    // تحميل أنواع المساعدات والمجموعات فقط مرة واحدة
     axiosInstance.get('/AssistanceTypes/GetAll').then(res => {
       setAssistanceTypes(res.data.data || []);
     });
@@ -44,6 +38,15 @@ const BulkAssistances = () => {
       setGroups(res.data.data || []);
     });
   }, []);
+
+  const fetchBeneficiaries = async () => {
+    try {
+      const res = await axiosInstance.get('/Beneficiaries/GetAll');
+      setBeneficiaries(res.data.data || []);
+    } catch (err) {
+      alert('فشل تحميل المستفيدين');
+    }
+  };
 
   const handleDragStop = (e, data) => {
     const position = { x: data.x, y: data.y };
@@ -91,18 +94,18 @@ const BulkAssistances = () => {
     }
   };
 
-  // ✅ التصفية حسب الاسم أو الرقم القومي + المجموعة
   const filtered = beneficiaries.filter(b =>
     (b.fullName?.toLowerCase().includes(filterText.toLowerCase()) ||
       b.nationalId?.includes(filterText)) &&
     (!selectedGroup || b.beneficiaryGroupName === selectedGroup)
   );
-const groupedBeneficiaries = filtered.reduce((acc, b) => {
-  const group = b.beneficiaryGroupName || 'بدون مجموعة';
-  if (!acc[group]) acc[group] = [];
-  acc[group].push(b);
-  return acc;
-}, {});
+
+  const groupedBeneficiaries = filtered.reduce((acc, b) => {
+    const group = b.beneficiaryGroupName || 'بدون مجموعة';
+    if (!acc[group]) acc[group] = [];
+    acc[group].push(b);
+    return acc;
+  }, {});
 
   const filledCount = filtered.filter(b =>
     parseFloat(assistanceData[b.beneficiaryId]?.amount) > 0
@@ -115,7 +118,6 @@ const groupedBeneficiaries = filtered.reduce((acc, b) => {
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4, direction: 'rtl', fontFamily: 'Cairo, sans-serif' }}>
-      {/* ✅ صندوق المجموع */}
       <Draggable position={boxPosition} onStop={handleDragStop}>
         <Box
           sx={{
@@ -144,7 +146,6 @@ const groupedBeneficiaries = filtered.reduce((acc, b) => {
         </Box>
       </Draggable>
 
-      {/* ✅ العنوان والبحث */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap">
         <Typography variant="h5" fontFamily="Cairo, sans-serif">
           تسجيل مساعدات جماعية
@@ -163,8 +164,7 @@ const groupedBeneficiaries = filtered.reduce((acc, b) => {
         </Box>
       </Box>
 
-      {/* ✅ الحقول المشتركة */}
-      <Box display="flex" gap={2} mb={2} flexWrap="wrap"  >
+      <Box display="flex" gap={2} mb={2} flexWrap="wrap">
         <TextField
           label="نوع المساعدة"
           select
@@ -180,7 +180,6 @@ const groupedBeneficiaries = filtered.reduce((acc, b) => {
           ))}
         </TextField>
 
-        {/* ✅ كمبوبوكس المجموعات */}
         <TextField
           label="المجموعة"
           select
@@ -190,12 +189,11 @@ const groupedBeneficiaries = filtered.reduce((acc, b) => {
           size="small"
         >
           <MenuItem value="">كل المجموعات</MenuItem>
-     {groups.map((g) => (
-  <MenuItem key={g.beneficiaryGroupId} value={g.beneficiaryGroupName}>
-    {g.beneficiaryGroupName}
-  </MenuItem>
-))}
-
+          {groups.map((g) => (
+            <MenuItem key={g.beneficiaryGroupId} value={g.beneficiaryGroupName}>
+              {g.beneficiaryGroupName}
+            </MenuItem>
+          ))}
         </TextField>
 
         <TextField
@@ -215,78 +213,64 @@ const groupedBeneficiaries = filtered.reduce((acc, b) => {
           sx={{ width: 200 }}
           size="small"
         />
+
+        <Button variant="contained" color="primary" onClick={fetchBeneficiaries}>
+          تحميل المستفيدين
+        </Button>
       </Box>
 
-      {/* ✅ الجدول */}
       <TableContainer component={Paper}>
         <Table size="small">
           <TableHead sx={{ backgroundColor: '#1C7F6D' }}>
             <TableRow>
-              <TableCell align="center" sx={{ color: 'white',fontFamily: 'Cairo, sans-serif', }}>الاسم</TableCell>
-              <TableCell align="center" sx={{ color: 'white',fontFamily: 'Cairo, sans-serif' }}>الرقم القومي</TableCell>
-              <TableCell align="center" sx={{ color: 'white',fontFamily: 'Cairo, sans-serif' }}>المبلغ</TableCell>
-              <TableCell align="center" sx={{ color: 'white',fontFamily: 'Cairo, sans-serif' }}>ملاحظات</TableCell>
+              <TableCell align="center" sx={{ color: 'white' }}>الاسم</TableCell>
+              <TableCell align="center" sx={{ color: 'white' }}>الرقم القومي</TableCell>
+              <TableCell align="center" sx={{ color: 'white' }}>المبلغ</TableCell>
+              <TableCell align="center" sx={{ color: 'white' }}>ملاحظات</TableCell>
             </TableRow>
           </TableHead>
-        
-         
-<TableBody>
-  {Object.entries(groupedBeneficiaries).map(([groupName, groupMembers]) => (
-    <React.Fragment key={groupName}>
-      <TableRow sx={{ backgroundColor: '#e0f2f1' }}>
-        <TableCell
-          colSpan={4}
-          sx={{
-            fontWeight: 'bold',
-            fontFamily: 'Cairo, sans-serif',
-            textAlign: 'right',
-            direction: 'rtl',
-            color: '#1C7F6D'
-          }}
-        >
-          📌 {groupName} ( {groupMembers.length} )
-        </TableCell>
-      </TableRow>
 
-      {groupMembers.map(b => (
-        <TableRow key={b.beneficiaryId}>
-          <TableCell align="center" sx={{ fontFamily: 'Cairo, sans-serif' }}>
-            {b.fullName}
-          </TableCell>
-          <TableCell align="center" sx={{ fontFamily: 'Cairo, sans-serif' }}>
-            {b.nationalId}
-          </TableCell>
-          <TableCell sx={{ fontFamily: 'Cairo, sans-serif' }}>
-            <TextField
-              type="number"
-              value={assistanceData[b.beneficiaryId]?.amount || ''}
-              onChange={e =>
-                handleInputChange(b.beneficiaryId, 'amount', e.target.value)
-              }
-              fullWidth
-              size="small"
-              inputProps={{ dir: 'rtl', min: 0 }}
-              sx={{ fontFamily: 'Cairo, sans-serif' }}
-            />
-          </TableCell>
-          <TableCell sx={{ fontFamily: 'Cairo, sans-serif' }}>
-            <TextField
-              value={assistanceData[b.beneficiaryId]?.notes || ''}
-              onChange={e =>
-                handleInputChange(b.beneficiaryId, 'notes', e.target.value)
-              }
-              fullWidth
-              size="small"
-              inputProps={{ dir: 'rtl' }}
-              sx={{ fontFamily: 'Cairo, sans-serif' }}
-            />
-          </TableCell>
-        </TableRow>
-      ))}
-    </React.Fragment>
-  ))}
-</TableBody>
+          <TableBody>
+            {Object.entries(groupedBeneficiaries).map(([groupName, groupMembers]) => (
+              <React.Fragment key={groupName}>
+                <TableRow sx={{ backgroundColor: '#e0f2f1' }}>
+                  <TableCell colSpan={4} sx={{ fontWeight: 'bold', color: '#1C7F6D' }}>
+                    📌 {groupName} ({groupMembers.length})
+                  </TableCell>
+                </TableRow>
 
+                {groupMembers.map(b => (
+                  <TableRow key={b.beneficiaryId}>
+                    <TableCell align="center">{b.fullName}</TableCell>
+                    <TableCell align="center">{b.nationalId}</TableCell>
+                    <TableCell>
+                      <TextField
+                        type="number"
+                        value={assistanceData[b.beneficiaryId]?.amount || ''}
+                        onChange={e =>
+                          handleInputChange(b.beneficiaryId, 'amount', e.target.value)
+                        }
+                        fullWidth
+                        size="small"
+                        inputProps={{ dir: 'rtl', min: 0 }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        value={assistanceData[b.beneficiaryId]?.notes || ''}
+                        onChange={e =>
+                          handleInputChange(b.beneficiaryId, 'notes', e.target.value)
+                        }
+                        fullWidth
+                        size="small"
+                        inputProps={{ dir: 'rtl' }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </React.Fragment>
+            ))}
+          </TableBody>
         </Table>
       </TableContainer>
     </Container>
